@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DivisionProblem, StudentAnswer, validateAnswer, getFeedbackMessage } from "@/lib/divisionUtils";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, X } from "lucide-react";
-import { useState } from "react";
+import { Check, X, Edit2 } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface AnswerInputProps {
   problem: DivisionProblem;
@@ -31,6 +31,11 @@ export default function AnswerInput({
   const [submitted, setSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [feedback, setFeedback] = useState("");
+
+  // Auto-reset when problem changes (for quiz mode question transitions)
+  useEffect(() => {
+    handleReset();
+  }, [problem.dividend, problem.divisor]);
 
   const handleCheck = () => {
     const answer: StudentAnswer = {
@@ -63,6 +68,12 @@ export default function AnswerInput({
     }
   };
 
+  const handleChangeAnswer = () => {
+    setSubmitted(false);
+    setIsCorrect(false);
+    setFeedback("");
+  };
+
   const isInputValid = quotient !== "" && remainder !== "";
 
   return (
@@ -79,7 +90,7 @@ export default function AnswerInput({
             value={quotient}
             onChange={(e) => setQuotient(e.target.value)}
             placeholder="Enter quotient"
-            disabled={submitted}
+            disabled={submitted && mode === "practice"}
             className="text-lg font-bold quotient-color border-2 border-[#a855f7]/30 focus:border-[#a855f7]"
           />
         </div>
@@ -94,7 +105,7 @@ export default function AnswerInput({
             value={remainder}
             onChange={(e) => setRemainder(e.target.value)}
             placeholder="Enter remainder"
-            disabled={submitted}
+            disabled={submitted && mode === "practice"}
             className="text-lg font-bold text-orange-500 border-2 border-orange-200 focus:border-orange-500"
           />
         </div>
@@ -117,6 +128,14 @@ export default function AnswerInput({
             className="flex-1 h-10 font-bold rounded-lg bg-gradient-to-r from-slate-400 to-slate-500 hover:from-slate-500 hover:to-slate-600 text-white"
           >
             Try Again
+          </Button>
+        ) : mode === "quiz" ? (
+          <Button
+            onClick={handleChangeAnswer}
+            className="flex-1 h-10 font-bold rounded-lg bg-gradient-to-r from-slate-400 to-slate-500 hover:from-slate-500 hover:to-slate-600 text-white"
+          >
+            <Edit2 size={18} className="mr-2" />
+            Change Answer
           </Button>
         ) : null}
       </div>

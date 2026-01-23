@@ -41,6 +41,10 @@ export default function QuizMode({ onComplete, onExit }: QuizModeProps) {
   };
 
   const handleNext = () => {
+    // If answer hasn't been submitted yet, don't allow advancing
+    if (answers[currentQuestion] === undefined) {
+      return;
+    }
     if (currentQuestion < QUIZ_LENGTH - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
@@ -267,8 +271,8 @@ export default function QuizMode({ onComplete, onExit }: QuizModeProps) {
 
           <Button
             onClick={handleNext}
-            disabled={currentQuestion === QUIZ_LENGTH - 1 && answers[currentQuestion] === undefined}
-            className="gap-2 bg-gradient-to-r from-[#0891b2] to-[#06b6d4] hover:from-[#0284c7] hover:to-[#0891b2] text-white"
+            disabled={answers[currentQuestion] === undefined}
+            className="gap-2 bg-gradient-to-r from-[#0891b2] to-[#06b6d4] hover:from-[#0284c7] hover:to-[#0891b2] text-white disabled:opacity-50"
           >
             {currentQuestion === QUIZ_LENGTH - 1 ? "Finish" : "Next"}
             <ArrowRight size={16} />
