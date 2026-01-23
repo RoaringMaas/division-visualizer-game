@@ -15,12 +15,16 @@ interface AnswerInputProps {
   problem: DivisionProblem;
   onAnswerSubmit?: (isCorrect: boolean) => void;
   showFeedback?: boolean;
+  mode?: "practice" | "quiz";
+  onNewProblem?: () => void;
 }
 
 export default function AnswerInput({
   problem,
   onAnswerSubmit,
-  showFeedback = true
+  showFeedback = true,
+  mode = "practice",
+  onNewProblem
 }: AnswerInputProps) {
   const [quotient, setQuotient] = useState("");
   const [remainder, setRemainder] = useState("");
@@ -50,6 +54,13 @@ export default function AnswerInput({
     setSubmitted(false);
     setIsCorrect(false);
     setFeedback("");
+  };
+
+  const handleNewProblem = () => {
+    handleReset();
+    if (onNewProblem) {
+      onNewProblem();
+    }
   };
 
   const isInputValid = quotient !== "" && remainder !== "";
@@ -100,14 +111,14 @@ export default function AnswerInput({
             <Check size={18} className="mr-2" />
             Check Answer
           </Button>
-        ) : (
+        ) : mode === "practice" ? (
           <Button
-            onClick={handleReset}
+            onClick={handleNewProblem}
             className="flex-1 h-10 font-bold rounded-lg bg-gradient-to-r from-slate-400 to-slate-500 hover:from-slate-500 hover:to-slate-600 text-white"
           >
             Try Again
           </Button>
-        )}
+        ) : null}
       </div>
 
       {/* Feedback Message */}

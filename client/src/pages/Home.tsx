@@ -160,10 +160,12 @@ export default function Home() {
                     <h3 className="text-lg font-bold text-foreground mb-4" style={{ fontFamily: "Fredoka" }}>
                       Your Answer
                     </h3>
-                    <AnswerInput
-                      problem={problem}
-                      showFeedback={true}
-                    />
+                  <AnswerInput
+                    problem={problem}
+                    showFeedback={true}
+                    mode="practice"
+                    onNewProblem={handleRefresh}
+                  />
                   </div>
 
                   {/* Refresh Button */}

@@ -222,6 +222,7 @@ export default function QuizMode({ onComplete, onExit }: QuizModeProps) {
               problem={problems[currentQuestion]}
               onAnswerSubmit={handleAnswerSubmit}
               showFeedback={true}
+              mode="quiz"
             />
           </motion.div>
         </AnimatePresence>
