@@ -1,12 +1,11 @@
 /**
  * Division Visualizer Game - Home Page
  * Design: Playful Educational with asymmetric layout
- * Features: Practice mode, Quiz mode, and Leaderboard
+ * Features: Practice mode, Quiz mode, and Leaderboard (shared backend)
  */
 
 import AnswerInput from "@/components/AnswerInput";
 import DivisionVisualizer from "@/components/DivisionVisualizer";
-import Leaderboard, { useLeaderboard } from "@/components/Leaderboard";
 import QuizMode from "@/components/QuizMode";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +15,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { RefreshCw, BookOpen, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
+import { trpc } from "@/lib/trpc";
 
 type PageMode = "practice" | "quiz" | "leaderboard";
 
@@ -23,7 +23,15 @@ export default function Home() {
   const [problem, setProblem] = useState<DivisionProblem | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pageMode, setPageMode] = useState<PageMode>("practice");
-  const { addEntry } = useLeaderboard();
+
+  // Fetch leaderboard from backend
+  const { data: leaderboardData, refetch: refetchLeaderboard } = trpc.leaderboard.getAll.useQuery();
+  const addScoreMutation = trpc.leaderboard.addScore.useMutation({
+    onSuccess: () => {
+      refetchLeaderboard();
+      setPageMode("leaderboard");
+    }
+  });
 
   // Initialize with first problem
   useEffect(() => {
@@ -39,8 +47,7 @@ export default function Home() {
   };
 
   const handleQuizComplete = (score: number, studentName: string) => {
-    addEntry(studentName, score);
-    setPageMode("leaderboard");
+    addScoreMutation.mutate({ name: studentName, score, totalQuestions: 10 });
   };
 
   if (!problem && pageMode === "practice") {
@@ -220,13 +227,169 @@ export default function Home() {
             className="py-12 px-4"
           >
             <div className="max-w-2xl mx-auto">
-              <Leaderboard
+              <SharedLeaderboard
+                entries={leaderboardData || []}
                 onClose={() => setPageMode("practice")}
               />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+/**
+ * Shared Leaderboard Component
+ * Displays scores from all students in the backend database
+ */
+function SharedLeaderboard({ entries, onClose }: { entries: any[]; onClose: () => void }) {
+  const getMedalIcon = (rank: number) => {
+    switch (rank) {
+      case 0:
+        return "🥇";
+      case 1:
+        return "🥈";
+      case 2:
+        return "🥉";
+      default:
+        return null;
+    }
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.3 }
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between"
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-3xl">🏆</span>
+          <h2 className="text-3xl font-bold text-foreground" style={{ fontFamily: "Fredoka" }}>
+            Leaderboard
+          </h2>
+        </div>
+      </motion.div>
+
+      {/* Leaderboard Table */}
+      {entries.length === 0 ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center py-12 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200"
+        >
+          <div className="text-4xl mb-2">📊</div>
+          <p className="text-lg text-muted-foreground">
+            No scores yet. Complete a quiz to appear on the leaderboard!
+          </p>
+        </motion.div>
+      ) : (
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="space-y-3"
+        >
+          {entries.map((entry, index) => (
+            <motion.div
+              key={entry.id}
+              variants={itemVariants}
+              className={`p-4 rounded-lg border-2 flex items-center justify-between ${
+                index < 3
+                  ? "bg-gradient-to-r from-[#f97316]/5 to-[#a855f7]/5 border-[#f97316]/30"
+                  : "bg-slate-50 border-slate-200"
+              }`}
+            >
+              <div className="flex items-center gap-4 flex-1">
+                {/* Rank */}
+                <div className="w-12 text-center">
+                  {getMedalIcon(index) ? (
+                    <span className="text-2xl">{getMedalIcon(index)}</span>
+                  ) : (
+                    <span className="text-xl font-bold text-muted-foreground">#{index + 1}</span>
+                  )}
+                </div>
+
+                {/* Name */}
+                <div className="flex-1">
+                  <p className="font-bold text-foreground text-lg">{entry.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(entry.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+
+              {/* Score and Accuracy */}
+              <div className="text-right">
+                <div className="text-2xl font-bold quotient-color">
+                  {Math.round((entry.score / entry.totalQuestions) * 100)}%
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {entry.score}/{entry.totalQuestions}
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+      )}
+
+      {/* Stats Summary */}
+      {entries.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="grid grid-cols-3 gap-4 p-6 bg-gradient-to-br from-[#0891b2]/10 to-[#a855f7]/10 rounded-lg border border-slate-200"
+        >
+          <div className="text-center">
+            <div className="text-2xl font-bold dividend-color">{entries.length}</div>
+            <div className="text-xs text-muted-foreground">Total Attempts</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold quotient-color">
+              {Math.round(
+                entries.reduce((sum, e) => sum + (e.score / e.totalQuestions) * 100, 0) / entries.length
+              )}%
+            </div>
+            <div className="text-xs text-muted-foreground">Average Accuracy</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold divisor-color">
+              {Math.max(...entries.map((e) => Math.round((e.score / e.totalQuestions) * 100)))}%
+            </div>
+            <div className="text-xs text-muted-foreground">Best Score</div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Close Button */}
+      <Button
+        onClick={onClose}
+        className="w-full h-10 bg-gradient-to-r from-slate-400 to-slate-500 hover:from-slate-500 hover:to-slate-600 text-white font-bold rounded-lg"
+      >
+        Back to Practice
+      </Button>
     </div>
   );
 }
