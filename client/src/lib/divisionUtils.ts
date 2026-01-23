@@ -160,3 +160,39 @@ export function generateDivisionVisualization(problem: DivisionProblem): number[
 
   return groups;
 }
+
+/**
+ * Validate student's answer
+ */
+export interface StudentAnswer {
+  quotient: number | string;
+  remainder: number | string;
+}
+
+export function validateAnswer(problem: DivisionProblem, answer: StudentAnswer): boolean {
+  const quotientCorrect = parseInt(String(answer.quotient)) === problem.quotient;
+  const remainderCorrect = parseInt(String(answer.remainder)) === problem.remainder;
+  return quotientCorrect && remainderCorrect;
+}
+
+/**
+ * Get feedback message for incorrect answer
+ */
+export function getFeedbackMessage(problem: DivisionProblem, answer: StudentAnswer): string {
+  const quotientCorrect = parseInt(String(answer.quotient)) === problem.quotient;
+  const remainderCorrect = parseInt(String(answer.remainder)) === problem.remainder;
+
+  if (quotientCorrect && remainderCorrect) {
+    return "Perfect! You got it right!";
+  }
+
+  const messages: string[] = [];
+  if (!quotientCorrect) {
+    messages.push(`Quotient should be ${problem.quotient}, not ${answer.quotient}`);
+  }
+  if (!remainderCorrect) {
+    messages.push(`Remainder should be ${problem.remainder}, not ${answer.remainder}`);
+  }
+
+  return messages.join(". ");
+}
