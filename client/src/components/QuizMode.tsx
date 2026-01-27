@@ -218,6 +218,7 @@ export default function QuizMode({ onComplete, onExit }: QuizModeProps) {
               <DivisionVisualizer
                 problem={problems[currentQuestion]}
                 showResult={false}
+                questionKey={currentQuestion}
               />
             </div>
 

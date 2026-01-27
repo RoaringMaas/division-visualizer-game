@@ -6,31 +6,36 @@
 
 import { DivisionProblem } from "@/lib/divisionUtils";
 import { motion } from "framer-motion";
+import { useMemo } from "react";
 
 interface DivisionVisualizerProps {
   problem: DivisionProblem;
   showResult?: boolean;
+  questionKey?: string | number;
 }
 
 export default function DivisionVisualizer({
   problem,
-  showResult = true
+  showResult = true,
+  questionKey
 }: DivisionVisualizerProps) {
   const { dividend, divisor, quotient, remainder, scenario } = problem;
 
-  // Create groups with equal items (quotient per group)
-  const groups = Array.from({ length: divisor }, (_, i) => 
-    Array.from({ length: quotient }, (_, j) => i * quotient + j + 1)
-  );
+  // Memoize groups to prevent unnecessary recalculations
+  const groups = useMemo(() => {
+    return Array.from({ length: divisor }, (_, i) => 
+      Array.from({ length: quotient }, (_, j) => i * quotient + j + 1)
+    );
+  }, [divisor, quotient]);
 
-  // Animation variants
+  // Animation variants - optimized to reduce re-renders
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.08,
-        delayChildren: 0.2
+        staggerChildren: 0.05,
+        delayChildren: 0.1
       }
     }
   };
@@ -42,7 +47,7 @@ export default function DivisionVisualizer({
       scale: 1,
       y: 0,
       transition: {
-        duration: 0.4
+        duration: 0.3
       }
     }
   };
@@ -53,7 +58,7 @@ export default function DivisionVisualizer({
       opacity: 1,
       scale: 1,
       transition: {
-        duration: 0.3
+        duration: 0.2
       }
     }
   };
@@ -65,8 +70,8 @@ export default function DivisionVisualizer({
       scale: 1,
       y: 0,
       transition: {
-        delay: 0.3,
-        duration: 0.4
+        delay: 0.15,
+        duration: 0.3
       }
     }
   };
@@ -77,14 +82,17 @@ export default function DivisionVisualizer({
       opacity: 1,
       scale: 1,
       transition: {
-        delay: 0.6,
-        duration: 0.5
+        delay: 0.3,
+        duration: 0.4
       }
     }
   };
 
   // Calculate grid columns based on divisor
   const gridCols = Math.min(divisor, 4);
+
+  // Create unique key for this question to force remount
+  const visualizationKey = questionKey ? `viz-${questionKey}` : `viz-${dividend}-${divisor}`;
 
   return (
     <div className="w-full space-y-8">
@@ -101,7 +109,7 @@ export default function DivisionVisualizer({
       </div>
 
       {/* Division Visualization - Groups with Equal Items */}
-      <div className="space-y-6">
+      <div className="space-y-6" key={visualizationKey}>
         {/* Main Groups */}
         <motion.div
           className="grid gap-4 justify-center"
@@ -112,11 +120,10 @@ export default function DivisionVisualizer({
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          key={`groups-${dividend}-${divisor}`}
         >
           {groups.map((group, groupIndex) => (
             <motion.div
-              key={groupIndex}
+              key={`group-${groupIndex}`}
               className="flex flex-col gap-3 p-4 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-200 shadow-md hover:shadow-lg transition-shadow"
               variants={groupVariants}
             >
@@ -129,10 +136,9 @@ export default function DivisionVisualizer({
               <div className="flex flex-wrap gap-2 justify-center">
                 {group.map((itemIndex) => (
                   <motion.div
-                    key={itemIndex}
+                    key={`item-${itemIndex}`}
                     className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0891b2] to-[#0284c7] shadow-md flex items-center justify-center text-white text-xs font-bold"
                     variants={blockVariants}
-                    whileHover={{ scale: 1.15, rotate: 5 }}
                   >
                     {itemIndex}
                   </motion.div>
@@ -154,7 +160,6 @@ export default function DivisionVisualizer({
             variants={remainderVariants}
             initial="hidden"
             animate="visible"
-            key={`remainder-${dividend}-${divisor}`}
           >
             <div className="flex flex-col gap-3 p-4 rounded-xl bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-300 shadow-md">
               {/* Remainder Label */}
@@ -169,7 +174,6 @@ export default function DivisionVisualizer({
                     key={`remainder-${i}`}
                     className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 shadow-md flex items-center justify-center text-white text-xs font-bold"
                     variants={blockVariants}
-                    whileHover={{ scale: 1.15, rotate: 5 }}
                   >
                     {dividend - remainder + i + 1}
                   </motion.div>
@@ -192,7 +196,6 @@ export default function DivisionVisualizer({
           variants={resultVariants}
           initial="hidden"
           animate="visible"
-          key={`result-${dividend}-${divisor}`}
         >
           <div className="text-center space-y-3">
             <div className="text-sm font-medium text-muted-foreground">Result</div>

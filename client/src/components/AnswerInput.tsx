@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { DivisionProblem, StudentAnswer, validateAnswer, getFeedbackMessage } from "@/lib/divisionUtils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface AnswerInputProps {
   problem: DivisionProblem;
@@ -31,11 +31,28 @@ export default function AnswerInput({
   const [submitted, setSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [feedback, setFeedback] = useState("");
+  
+  // Track previous problem to detect changes
+  const prevProblemRef = useRef<DivisionProblem | null>(null);
 
   // Auto-reset when problem changes (for quiz mode question transitions)
   useEffect(() => {
-    handleReset();
+    // Only reset if problem actually changed
+    if (prevProblemRef.current && 
+        (prevProblemRef.current.dividend !== problem.dividend || 
+         prevProblemRef.current.divisor !== problem.divisor)) {
+      handleReset();
+    }
+    prevProblemRef.current = problem;
   }, [problem.dividend, problem.divisor]);
+
+  const handleReset = () => {
+    setQuotient("");
+    setRemainder("");
+    setSubmitted(false);
+    setIsCorrect(false);
+    setFeedback("");
+  };
 
   const handleCheck = () => {
     const answer: StudentAnswer = {
@@ -51,14 +68,6 @@ export default function AnswerInput({
     if (onAnswerSubmit) {
       onAnswerSubmit(correct);
     }
-  };
-
-  const handleReset = () => {
-    setQuotient("");
-    setRemainder("");
-    setSubmitted(false);
-    setIsCorrect(false);
-    setFeedback("");
   };
 
   const handleNewProblem = () => {
