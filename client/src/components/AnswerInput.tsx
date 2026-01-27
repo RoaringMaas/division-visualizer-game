@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DivisionProblem, StudentAnswer, validateAnswer, getFeedbackMessage } from "@/lib/divisionUtils";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, X, Edit2 } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface AnswerInputProps {
@@ -68,12 +68,6 @@ export default function AnswerInput({
     }
   };
 
-  const handleChangeAnswer = () => {
-    setSubmitted(false);
-    setIsCorrect(false);
-    setFeedback("");
-  };
-
   const isInputValid = quotient !== "" && remainder !== "";
 
   return (
@@ -129,14 +123,6 @@ export default function AnswerInput({
           >
             Try Again
           </Button>
-        ) : mode === "quiz" ? (
-          <Button
-            onClick={handleChangeAnswer}
-            className="flex-1 h-10 font-bold rounded-lg bg-gradient-to-r from-slate-400 to-slate-500 hover:from-slate-500 hover:to-slate-600 text-white"
-          >
-            <Edit2 size={18} className="mr-2" />
-            Change Answer
-          </Button>
         ) : null}
       </div>
 
@@ -169,8 +155,8 @@ export default function AnswerInput({
         )}
       </AnimatePresence>
 
-      {/* Answer Summary */}
-      {submitted && (
+      {/* Answer Summary - Only show in practice mode */}
+      {submitted && mode === "practice" && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
