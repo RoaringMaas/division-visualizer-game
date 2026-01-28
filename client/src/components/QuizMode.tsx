@@ -219,6 +219,7 @@ export default function QuizMode({ onComplete, onExit }: QuizModeProps) {
                 problem={problems[currentQuestion]}
                 showResult={false}
                 questionKey={currentQuestion}
+                mode="quiz"
               />
             </div>
 
