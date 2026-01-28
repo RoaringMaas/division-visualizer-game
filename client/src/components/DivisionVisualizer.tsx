@@ -324,11 +324,13 @@ export default function DivisionVisualizer({
       {/* Result Display */}
       {renderResult()}
 
-      {/* Mathematical Notation */}
-      <div className="text-center text-xs text-muted-foreground font-mono space-y-1">
-        <div>{dividend} ÷ {divisor} = {quotient}{remainder > 0 ? ` R${remainder}` : ""}</div>
-        <div className="text-[10px]">({dividend} = {divisor} × {quotient}{remainder > 0 ? ` + ${remainder}` : ""})</div>
-      </div>
+      {/* Mathematical Notation - Hidden in quiz mode */}
+      {shouldAnimate && (
+        <div className="text-center text-xs text-muted-foreground font-mono space-y-1">
+          <div>{dividend} ÷ {divisor} = {quotient}{remainder > 0 ? ` R${remainder}` : ""}</div>
+          <div className="text-[10px]">({dividend} = {divisor} × {quotient}{remainder > 0 ? ` + ${remainder}` : ""})</div>
+        </div>
+      )}
     </div>
   );
 }
