@@ -3,47 +3,21 @@
   "installCommand": "pnpm install",
   "framework": "vite",
   "outputDirectory": "dist",
-  "env": {
-    "DATABASE_URL": {
-      "description": "MySQL database connection string"
-    },
-    "JWT_SECRET": {
-      "description": "Secret key for JWT session signing"
-    },
-    "VITE_APP_ID": {
-      "description": "Manus OAuth application ID"
-    },
-    "OAUTH_SERVER_URL": {
-      "description": "Manus OAuth server URL"
-    },
-    "OWNER_OPEN_ID": {
-      "description": "Owner's Manus Open ID"
-    },
-    "OWNER_NAME": {
-      "description": "Owner's name"
-    },
-    "BUILT_IN_FORGE_API_URL": {
-      "description": "Manus built-in API URL"
-    },
-    "BUILT_IN_FORGE_API_KEY": {
-      "description": "Manus built-in API key"
-    },
-    "VITE_FRONTEND_FORGE_API_KEY": {
-      "description": "Frontend Manus API key"
-    },
-    "VITE_FRONTEND_FORGE_API_URL": {
-      "description": "Frontend Manus API URL"
-    },
-    "VITE_OAUTH_PORTAL_URL": {
-      "description": "Manus OAuth portal URL"
-    },
-    "VITE_APP_TITLE": {
-      "description": "Application title"
-    },
-    "VITE_APP_LOGO": {
-      "description": "Application logo URL or path"
-    }
-  },
+  "env": [
+    "DATABASE_URL",
+    "JWT_SECRET",
+    "VITE_APP_ID",
+    "OAUTH_SERVER_URL",
+    "OWNER_OPEN_ID",
+    "OWNER_NAME",
+    "BUILT_IN_FORGE_API_URL",
+    "BUILT_IN_FORGE_API_KEY",
+    "VITE_FRONTEND_FORGE_API_KEY",
+    "VITE_FRONTEND_FORGE_API_URL",
+    "VITE_OAUTH_PORTAL_URL",
+    "VITE_APP_TITLE",
+    "VITE_APP_LOGO"
+  ],
   "rewrites": [
     {
       "source": "/api/:path*",
