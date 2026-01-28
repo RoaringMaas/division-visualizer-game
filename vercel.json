@@ -1,6 +1,5 @@
 {
   "buildCommand": "pnpm build",
-  "devCommand": "pnpm dev",
   "installCommand": "pnpm install",
   "framework": "vite",
   "outputDirectory": "dist",
@@ -45,12 +44,25 @@
       "description": "Application logo URL or path"
     }
   },
-  "regions": ["sfo1"],
-  "functions": {
-    "server/_core/index.ts": {
-      "runtime": "nodejs20.x",
-      "memory": 1024,
-      "maxDuration": 60
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/index.html"
     }
-  }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, s-maxage=3600"
+        }
+      ]
+    }
+  ]
 }
