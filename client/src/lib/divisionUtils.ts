@@ -3,12 +3,15 @@
  * Generates division problems and real-life scenarios
  */
 
+export type Difficulty = 'easy' | 'medium' | 'hard';
+
 export interface DivisionProblem {
   dividend: number;
   divisor: number;
   quotient: number;
   remainder: number;
   scenario: Scenario;
+  difficulty: Difficulty;
 }
 
 export interface Scenario {
@@ -94,18 +97,38 @@ const scenarios: Scenario[] = [
 ];
 
 /**
- * Generate a random division problem with 1-2 digit numbers
+ * Generate a random division problem based on difficulty level
+ * Easy: 2-digit ÷ 1-digit (10-99 ÷ 2-9)
+ * Medium: 3-digit ÷ 1-digit (100-999 ÷ 2-9)
+ * Hard: 2-3 digit ÷ 2-digit (10-999 ÷ 10-99)
  */
-export function generateDivisionProblem(): DivisionProblem {
-  // Generate dividend: 10-99 (2 digits) or 1-9 (1 digit)
-  const dividend = Math.random() > 0.5 
-    ? Math.floor(Math.random() * 90) + 10  // 10-99
-    : Math.floor(Math.random() * 9) + 1;   // 1-9
+export function generateDivisionProblem(difficulty: Difficulty = 'easy'): DivisionProblem {
+  let dividend: number;
+  let divisor: number;
 
-  // Generate divisor: 2-12 (ensure it's smaller than dividend)
-  let divisor = Math.floor(Math.random() * 11) + 2; // 2-12
+  if (difficulty === 'easy') {
+    // Easy: 2-digit ÷ 1-digit
+    dividend = Math.floor(Math.random() * 90) + 10; // 10-99
+    divisor = Math.floor(Math.random() * 8) + 2;    // 2-9
+  } else if (difficulty === 'medium') {
+    // Medium: 3-digit ÷ 1-digit
+    dividend = Math.floor(Math.random() * 900) + 100; // 100-999
+    divisor = Math.floor(Math.random() * 8) + 2;      // 2-9
+  } else {
+    // Hard: 2-3 digit ÷ 2-digit
+    dividend = Math.floor(Math.random() * 900) + 100; // 100-999
+    divisor = Math.floor(Math.random() * 90) + 10;    // 10-99
+  }
+
+  // Ensure divisor is smaller than dividend
   while (divisor > dividend) {
-    divisor = Math.floor(Math.random() * 11) + 2;
+    if (difficulty === 'easy') {
+      divisor = Math.floor(Math.random() * 8) + 2;
+    } else if (difficulty === 'medium') {
+      divisor = Math.floor(Math.random() * 8) + 2;
+    } else {
+      divisor = Math.floor(Math.random() * 90) + 10;
+    }
   }
 
   const quotient = Math.floor(dividend / divisor);
@@ -119,7 +142,8 @@ export function generateDivisionProblem(): DivisionProblem {
     divisor,
     quotient,
     remainder,
-    scenario
+    scenario,
+    difficulty
   };
 }
 
@@ -145,17 +169,22 @@ export function getExplanationText(problem: DivisionProblem): string {
 
 /**
  * Generate array of items to visualize division
+ * For hard mode with large numbers, cap visualization to 20 groups max
  */
 export function generateDivisionVisualization(problem: DivisionProblem): number[][] {
-  const { dividend, divisor } = problem;
+  const { dividend, divisor, difficulty } = problem;
   const groups: number[][] = [];
+  
+  // For hard mode, cap visualization to prevent performance issues
+  const maxGroups = difficulty === 'hard' ? Math.min(divisor, 20) : divisor;
+  const itemsPerGroup = Math.ceil(dividend / maxGroups);
 
-  for (let i = 0; i < divisor; i++) {
+  for (let i = 0; i < maxGroups; i++) {
     groups.push([]);
   }
 
   for (let i = 0; i < dividend; i++) {
-    groups[i % divisor].push(i);
+    groups[i % maxGroups].push(i);
   }
 
   return groups;

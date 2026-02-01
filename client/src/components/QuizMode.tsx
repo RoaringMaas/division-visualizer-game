@@ -7,7 +7,7 @@ import AnswerInput from "@/components/AnswerInput";
 import DivisionVisualizer from "@/components/DivisionVisualizer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DivisionProblem, generateDivisionProblem } from "@/lib/divisionUtils";
+import { DivisionProblem, generateDivisionProblem, Difficulty } from "@/lib/divisionUtils";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -15,9 +15,10 @@ import { useEffect, useState } from "react";
 interface QuizModeProps {
   onComplete?: (score: number, studentName: string) => void;
   onExit?: () => void;
+  difficulty?: Difficulty;
 }
 
-export default function QuizMode({ onComplete, onExit }: QuizModeProps) {
+export default function QuizMode({ onComplete, onExit, difficulty = 'easy' }: QuizModeProps) {
   const QUIZ_LENGTH = 10;
   const [problems, setProblems] = useState<DivisionProblem[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -29,10 +30,10 @@ export default function QuizMode({ onComplete, onExit }: QuizModeProps) {
   // Generate quiz problems on mount
   useEffect(() => {
     const generatedProblems = Array.from({ length: QUIZ_LENGTH }, () =>
-      generateDivisionProblem()
+      generateDivisionProblem(difficulty)
     );
     setProblems(generatedProblems);
-  }, []);
+  }, [difficulty]);
 
   const handleAnswerSubmit = (isCorrect: boolean) => {
     const newAnswers = [...answers];

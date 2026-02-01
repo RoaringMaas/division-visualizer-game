@@ -10,7 +10,8 @@ import QuizMode from "@/components/QuizMode";
 import { Button } from "@/components/ui/button";
 import {
   DivisionProblem,
-  generateDivisionProblem
+  generateDivisionProblem,
+  Difficulty
 } from "@/lib/divisionUtils";
 import { motion, AnimatePresence } from "framer-motion";
 import { RefreshCw, BookOpen, Trophy } from "lucide-react";
@@ -23,6 +24,7 @@ export default function Home() {
   const [problem, setProblem] = useState<DivisionProblem | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pageMode, setPageMode] = useState<PageMode>("practice");
+  const [difficulty, setDifficulty] = useState<Difficulty>("easy");
 
   // Fetch leaderboard from backend
   const { data: leaderboardData, refetch: refetchLeaderboard } = trpc.leaderboard.getAll.useQuery();
@@ -35,13 +37,13 @@ export default function Home() {
 
   // Initialize with first problem
   useEffect(() => {
-    setProblem(generateDivisionProblem());
-  }, []);
+    setProblem(generateDivisionProblem(difficulty));
+  }, [difficulty]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
     setTimeout(() => {
-      setProblem(generateDivisionProblem());
+      setProblem(generateDivisionProblem(difficulty));
       setIsRefreshing(false);
     }, 300);
   };
@@ -86,7 +88,7 @@ export default function Home() {
               </p>
 
               {/* Mode Buttons */}
-              <div className="flex gap-3 justify-center flex-wrap">
+              <div className="flex gap-3 justify-center flex-wrap mb-6">
                 <Button
                   onClick={() => setPageMode("practice")}
                   className="gap-2 bg-gradient-to-r from-[#0891b2] to-[#06b6d4] hover:from-[#0284c7] hover:to-[#0891b2] text-white font-bold"
@@ -110,6 +112,42 @@ export default function Home() {
                   Leaderboard
                 </Button>
               </div>
+
+              {/* Difficulty Selector */}
+              {pageMode === "practice" && (
+                <div className="flex gap-2 justify-center flex-wrap">
+                  <button
+                    onClick={() => setDifficulty("easy")}
+                    className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                      difficulty === "easy"
+                        ? "bg-green-500 text-white shadow-lg"
+                        : "bg-white text-green-600 border-2 border-green-500 hover:bg-green-50"
+                    }`}
+                  >
+                    Easy (2÷1)
+                  </button>
+                  <button
+                    onClick={() => setDifficulty("medium")}
+                    className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                      difficulty === "medium"
+                        ? "bg-blue-500 text-white shadow-lg"
+                        : "bg-white text-blue-600 border-2 border-blue-500 hover:bg-blue-50"
+                    }`}
+                  >
+                    Medium (3÷1)
+                  </button>
+                  <button
+                    onClick={() => setDifficulty("hard")}
+                    className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                      difficulty === "hard"
+                        ? "bg-red-500 text-white shadow-lg"
+                        : "bg-white text-red-600 border-2 border-red-500 hover:bg-red-50"
+                    }`}
+                  >
+                    Hard (2-3÷2)
+                  </button>
+                </div>
+              )}
             </motion.div>
 
             {/* Main Content - Asymmetric Layout */}
@@ -216,6 +254,7 @@ export default function Home() {
             <QuizMode
               onComplete={handleQuizComplete}
               onExit={() => setPageMode("practice")}
+              difficulty={difficulty}
             />
           </motion.div>
         )}
@@ -248,150 +287,78 @@ export default function Home() {
 function SharedLeaderboard({ entries, onClose }: { entries: any[]; onClose: () => void }) {
   const getMedalIcon = (rank: number) => {
     switch (rank) {
-      case 0:
-        return "🥇";
       case 1:
-        return "🥈";
+        return "🥇";
       case 2:
+        return "🥈";
+      case 3:
         return "🥉";
       default:
-        return null;
-    }
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.05
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: { duration: 0.3 }
+        return "📊";
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
-      >
-        <div className="flex items-center gap-3">
-          <span className="text-3xl">🏆</span>
-          <h2 className="text-3xl font-bold text-foreground" style={{ fontFamily: "Fredoka" }}>
-            Leaderboard
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="py-12 px-4"
+    >
+      <div className="bg-white rounded-2xl shadow-2xl p-8 border border-slate-100">
+        <div className="text-center mb-8">
+          <h2 className="text-4xl font-bold text-foreground mb-2" style={{ fontFamily: "Fredoka" }}>
+            🏆 Leaderboard
           </h2>
+          <p className="text-muted-foreground">Top performers in Division Visualizer</p>
         </div>
-      </motion.div>
 
-      {/* Leaderboard Table */}
-      {entries.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-12 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200"
-        >
-          <div className="text-4xl mb-2">📊</div>
-          <p className="text-lg text-muted-foreground">
-            No scores yet. Complete a quiz to appear on the leaderboard!
-          </p>
-        </motion.div>
-      ) : (
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="space-y-3"
-        >
-          {entries.map((entry, index) => (
-            <motion.div
-              key={entry.id}
-              variants={itemVariants}
-              className={`p-4 rounded-lg border-2 flex items-center justify-between ${
-                index < 3
-                  ? "bg-gradient-to-r from-[#f97316]/5 to-[#a855f7]/5 border-[#f97316]/30"
-                  : "bg-slate-50 border-slate-200"
-              }`}
-            >
-              <div className="flex items-center gap-4 flex-1">
-                {/* Rank */}
-                <div className="w-12 text-center">
-                  {getMedalIcon(index) ? (
-                    <span className="text-2xl">{getMedalIcon(index)}</span>
-                  ) : (
-                    <span className="text-xl font-bold text-muted-foreground">#{index + 1}</span>
-                  )}
+        {entries.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground mb-4">No scores yet. Be the first to take the quiz!</p>
+            <Button onClick={onClose} className="bg-gradient-to-r from-[#0891b2] to-[#06b6d4] text-white">
+              Back to Practice
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {entries.map((entry, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-50 to-slate-100 rounded-lg border border-slate-200 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-center gap-4">
+                  <span className="text-2xl">{getMedalIcon(index + 1)}</span>
+                  <div>
+                    <p className="font-bold text-foreground">{entry.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {entry.score}/{entry.totalQuestions} correct
+                    </p>
+                  </div>
                 </div>
-
-                {/* Name */}
-                <div className="flex-1">
-                  <p className="font-bold text-foreground text-lg">{entry.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(entry.createdAt).toLocaleDateString()}
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-[#0891b2]">
+                    {Math.round((entry.score / entry.totalQuestions) * 100)}%
                   </p>
+                  <p className="text-xs text-muted-foreground">accuracy</p>
                 </div>
-              </div>
-
-              {/* Score and Accuracy */}
-              <div className="text-right">
-                <div className="text-2xl font-bold quotient-color">
-                  {Math.round((entry.score / entry.totalQuestions) * 100)}%
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {entry.score}/{entry.totalQuestions}
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
-      )}
-
-      {/* Stats Summary */}
-      {entries.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="grid grid-cols-3 gap-4 p-6 bg-gradient-to-br from-[#0891b2]/10 to-[#a855f7]/10 rounded-lg border border-slate-200"
-        >
-          <div className="text-center">
-            <div className="text-2xl font-bold dividend-color">{entries.length}</div>
-            <div className="text-xs text-muted-foreground">Total Attempts</div>
+              </motion.div>
+            ))}
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold quotient-color">
-              {Math.round(
-                entries.reduce((sum, e) => sum + (e.score / e.totalQuestions) * 100, 0) / entries.length
-              )}%
-            </div>
-            <div className="text-xs text-muted-foreground">Average Accuracy</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold divisor-color">
-              {Math.max(...entries.map((e) => Math.round((e.score / e.totalQuestions) * 100)))}%
-            </div>
-            <div className="text-xs text-muted-foreground">Best Score</div>
-          </div>
-        </motion.div>
-      )}
+        )}
 
-      {/* Close Button */}
-      <Button
-        onClick={onClose}
-        className="w-full h-10 bg-gradient-to-r from-slate-400 to-slate-500 hover:from-slate-500 hover:to-slate-600 text-white font-bold rounded-lg"
-      >
-        Back to Practice
-      </Button>
-    </div>
+        <div className="mt-8 text-center">
+          <Button
+            onClick={onClose}
+            className="bg-gradient-to-r from-[#0891b2] to-[#06b6d4] text-white hover:from-[#0284c7] hover:to-[#0891b2]"
+          >
+            Back to Practice
+          </Button>
+        </div>
+      </div>
+    </motion.div>
   );
 }
