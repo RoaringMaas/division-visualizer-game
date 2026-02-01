@@ -4,7 +4,6 @@
  */
 
 import AnswerInput from "@/components/AnswerInput";
-import DivisionVisualizer from "@/components/DivisionVisualizer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DivisionProblem, generateDivisionProblem, Difficulty } from "@/lib/divisionUtils";
@@ -165,7 +164,7 @@ export default function QuizMode({ onComplete, onExit, difficulty = 'easy' }: Qu
   // Main quiz screen
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#fef9f3] via-[#fef3c7]/30 to-[#fef9f3] py-8 px-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-2xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -214,14 +213,14 @@ export default function QuizMode({ onComplete, onExit, difficulty = 'easy' }: Qu
             transition={{ duration: 0.3 }}
             className="bg-white rounded-2xl shadow-xl p-8 border border-slate-100 mb-6"
           >
-            {/* Visualization */}
-            <div className="mb-8">
-              <DivisionVisualizer
-                problem={problems[currentQuestion]}
-                showResult={false}
-                questionKey={currentQuestion}
-                mode="quiz"
-              />
+            {/* Question Display */}
+            <div className="mb-8 text-center">
+              <h2 className="text-6xl font-bold text-foreground mb-4" style={{ fontFamily: "Fredoka" }}>
+                {problems[currentQuestion].dividend} ÷ {problems[currentQuestion].divisor}
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                {problems[currentQuestion].scenario.emoji} {problems[currentQuestion].scenario.title}
+              </p>
             </div>
 
             {/* Answer Input */}
