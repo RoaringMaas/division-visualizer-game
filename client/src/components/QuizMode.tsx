@@ -116,7 +116,7 @@ export default function QuizMode({ onComplete, onExit, difficulty: initialDiffic
               }}
               className="w-full p-4 rounded-lg font-bold text-lg transition-all bg-green-500 text-white hover:bg-green-600 hover:shadow-lg"
             >
-              Easy (2÷1)
+              Easy (2-digit by 1-digit)
             </button>
 
             {/* Medium Button */}
@@ -127,7 +127,7 @@ export default function QuizMode({ onComplete, onExit, difficulty: initialDiffic
               }}
               className="w-full p-4 rounded-lg font-bold text-lg transition-all bg-blue-500 text-white hover:bg-blue-600 hover:shadow-lg"
             >
-              Medium (3÷1)
+              Medium (3-digit by 1-digit)
             </button>
 
             {/* Hard Button */}
@@ -138,7 +138,7 @@ export default function QuizMode({ onComplete, onExit, difficulty: initialDiffic
               }}
               className="w-full p-4 rounded-lg font-bold text-lg transition-all bg-red-500 text-white hover:bg-red-600 hover:shadow-lg"
             >
-              Hard (2-3÷2)
+              Hard (2-digit & 3-digit by 2-digit)
             </button>
 
             {/* Back Button */}

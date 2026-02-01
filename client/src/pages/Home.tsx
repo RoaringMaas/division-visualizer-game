@@ -124,7 +124,7 @@ export default function Home() {
                         : "bg-white text-green-600 border-2 border-green-500 hover:bg-green-50"
                     }`}
                   >
-                    Easy
+                    Easy (2-digit by 1-digit)
                   </button>
                   <button
                     onClick={() => setDifficulty("medium")}
@@ -134,7 +134,7 @@ export default function Home() {
                         : "bg-white text-blue-600 border-2 border-blue-500 hover:bg-blue-50"
                     }`}
                   >
-                    Medium
+                    Medium (3-digit by 1-digit)
                   </button>
                   <button
                     onClick={() => setDifficulty("hard")}
@@ -144,7 +144,7 @@ export default function Home() {
                         : "bg-white text-red-600 border-2 border-red-500 hover:bg-red-50"
                     }`}
                   >
-                    Hard
+                    Hard (2-digit & 3-digit by 2-digit)
                   </button>
                 </div>
               )}
