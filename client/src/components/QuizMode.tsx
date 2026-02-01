@@ -17,8 +17,10 @@ interface QuizModeProps {
   difficulty?: Difficulty;
 }
 
-export default function QuizMode({ onComplete, onExit, difficulty = 'easy' }: QuizModeProps) {
+export default function QuizMode({ onComplete, onExit, difficulty: initialDifficulty = 'easy' }: QuizModeProps) {
   const QUIZ_LENGTH = 10;
+  const [difficulty, setDifficulty] = useState<Difficulty>(initialDifficulty);
+  const [quizStarted, setQuizStarted] = useState(false);
   const [problems, setProblems] = useState<DivisionProblem[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<boolean[]>([]);
@@ -26,13 +28,19 @@ export default function QuizMode({ onComplete, onExit, difficulty = 'easy' }: Qu
   const [studentName, setStudentName] = useState("");
   const [nameSubmitted, setNameSubmitted] = useState(false);
 
-  // Generate quiz problems on mount
+  // Generate quiz problems when quiz starts
   useEffect(() => {
-    const generatedProblems = Array.from({ length: QUIZ_LENGTH }, () =>
-      generateDivisionProblem(difficulty)
-    );
-    setProblems(generatedProblems);
-  }, [difficulty]);
+    if (quizStarted) {
+      const generatedProblems = Array.from({ length: QUIZ_LENGTH }, () =>
+        generateDivisionProblem(difficulty)
+      );
+      setProblems(generatedProblems);
+    }
+  }, [quizStarted, difficulty]);
+
+  const handleStartQuiz = () => {
+    setQuizStarted(true);
+  };
 
   const handleAnswerSubmit = (isCorrect: boolean) => {
     const newAnswers = [...answers];
@@ -70,6 +78,83 @@ export default function QuizMode({ onComplete, onExit, difficulty = 'easy' }: Qu
 
   const score = answers.filter((a) => a === true).length;
   const accuracy = Math.round((score / QUIZ_LENGTH) * 100);
+
+  // Difficulty selection screen
+  if (!quizStarted) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="min-h-screen bg-gradient-to-br from-[#fef9f3] via-[#fef3c7]/30 to-[#fef9f3] flex items-center justify-center p-4"
+      >
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full border border-slate-100">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-center mb-8"
+          >
+            <h2 className="text-4xl font-bold text-foreground mb-2" style={{ fontFamily: "Fredoka" }}>
+              Select Difficulty
+            </h2>
+            <p className="text-muted-foreground">
+              Choose a difficulty level for your 10-question quiz
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="space-y-4"
+          >
+            {/* Easy Button */}
+            <button
+              onClick={() => {
+                setDifficulty('easy');
+                handleStartQuiz();
+              }}
+              className="w-full p-4 rounded-lg font-bold text-lg transition-all bg-green-500 text-white hover:bg-green-600 hover:shadow-lg"
+            >
+              Easy (2÷1)
+            </button>
+
+            {/* Medium Button */}
+            <button
+              onClick={() => {
+                setDifficulty('medium');
+                handleStartQuiz();
+              }}
+              className="w-full p-4 rounded-lg font-bold text-lg transition-all bg-blue-500 text-white hover:bg-blue-600 hover:shadow-lg"
+            >
+              Medium (3÷1)
+            </button>
+
+            {/* Hard Button */}
+            <button
+              onClick={() => {
+                setDifficulty('hard');
+                handleStartQuiz();
+              }}
+              className="w-full p-4 rounded-lg font-bold text-lg transition-all bg-red-500 text-white hover:bg-red-600 hover:shadow-lg"
+            >
+              Hard (2-3÷2)
+            </button>
+
+            {/* Back Button */}
+            <Button
+              onClick={onExit}
+              variant="outline"
+              className="w-full h-12"
+            >
+              <ArrowLeft size={16} className="mr-2" />
+              Back to Menu
+            </Button>
+          </motion.div>
+        </div>
+      </motion.div>
+    );
+  }
 
   // Loading state
   if (problems.length === 0) {
