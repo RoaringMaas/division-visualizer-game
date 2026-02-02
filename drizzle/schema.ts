@@ -39,3 +39,21 @@ export const leaderboardScores = mysqlTable("leaderboardScores", {
 
 export type LeaderboardScore = typeof leaderboardScores.$inferSelect;
 export type InsertLeaderboardScore = typeof leaderboardScores.$inferInsert;
+
+/**
+ * Student Statistics table for tracking progress
+ * Stores aggregated statistics for each student by difficulty level
+ */
+export const studentStatistics = mysqlTable("studentStatistics", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  difficulty: mysqlEnum("difficulty", ["easy", "medium", "hard"]).notNull(),
+  totalAttempts: int("totalAttempts").default(0).notNull(),
+  totalCorrect: int("totalCorrect").default(0).notNull(),
+  averageAccuracy: int("averageAccuracy").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type StudentStatistic = typeof studentStatistics.$inferSelect;
+export type InsertStudentistic = typeof studentStatistics.$inferInsert;

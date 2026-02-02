@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, leaderboardScores, InsertLeaderboardScore } from "../drizzle/schema";
+import { InsertUser, users, leaderboardScores, InsertLeaderboardScore, studentStatistics } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -138,6 +138,79 @@ export async function addLeaderboardScore(
     return result;
   } catch (error) {
     console.error("[Database] Failed to add leaderboard score:", error);
+    throw error;
+  }
+}
+
+/**
+ * Get student statistics by name
+ */
+export async function getStudentStatistics(name: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get statistics: database not available");
+    return [];
+  }
+
+  try {
+    const result = await db.select().from(studentStatistics).where(eq(studentStatistics.name, name));
+    return result;
+  } catch (error) {
+    console.error("[Database] Failed to get student statistics:", error);
+    return [];
+  }
+}
+
+/**
+ * Update or create student statistics
+ */
+export async function updateStudentStatistics(
+  name: string,
+  difficulty: "easy" | "medium" | "hard",
+  score: number,
+  totalQuestions: number
+) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot update statistics: database not available");
+    return null;
+  }
+
+  try {
+    const existing = await db
+      .select()
+      .from(studentStatistics)
+      .where(eq(studentStatistics.name, name))
+      .limit(1);
+
+    const isCorrect = score === totalQuestions ? 1 : 0;
+    const newAccuracy = Math.round((score / totalQuestions) * 100);
+
+    if (existing.length > 0) {
+      const current = existing[0];
+      const newTotalAttempts = current.totalAttempts + 1;
+      const newTotalCorrect = current.totalCorrect + isCorrect;
+      const updatedAccuracy = Math.round((newTotalCorrect / newTotalAttempts) * 100);
+
+      await db
+        .update(studentStatistics)
+        .set({
+          totalAttempts: newTotalAttempts,
+          totalCorrect: newTotalCorrect,
+          averageAccuracy: updatedAccuracy,
+        })
+        .where(eq(studentStatistics.name, name));
+    } else {
+      await db.insert(studentStatistics).values({
+        name,
+        difficulty,
+        totalAttempts: 1,
+        totalCorrect: isCorrect,
+        averageAccuracy: newAccuracy,
+      });
+    }
+  } catch (error) {
+    console.error("[Database] Failed to update student statistics:", error);
     throw error;
   }
 }

@@ -3,7 +3,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
-import { getLeaderboardScores, addLeaderboardScore } from "./db";
+import { getLeaderboardScores, addLeaderboardScore, getStudentStatistics, updateStudentStatistics } from "./db";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -33,6 +33,31 @@ export const appRouter = router({
       )
       .mutation(async ({ input }) => {
         await addLeaderboardScore(input.name, input.score, input.totalQuestions);
+        return { success: true };
+      }),
+  }),
+
+  statistics: router({
+    getByName: publicProcedure
+      .input(
+        z.object({
+          name: z.string().min(1).max(255),
+        })
+      )
+      .query(async ({ input }) => {
+        return await getStudentStatistics(input.name);
+      }),
+    update: publicProcedure
+      .input(
+        z.object({
+          name: z.string().min(1).max(255),
+          difficulty: z.enum(["easy", "medium", "hard"]),
+          score: z.number().int().min(0).max(10),
+          totalQuestions: z.number().int().positive(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        await updateStudentStatistics(input.name, input.difficulty, input.score, input.totalQuestions);
         return { success: true };
       }),
   }),
