@@ -48,3 +48,8 @@
 - [x] Allow clicking wrong question numbers in results summary
 - [x] Track corrected questions and update results page
 - [x] Return to results page after answering correctly
+
+## Phase 9: Bug Fix - Leaderboard Score Saving
+- [x] Fix score not appearing on leaderboard after saving
+- [x] Ensure backend database saves student name and score
+- [x] Verify leaderboard fetches and displays saved scores

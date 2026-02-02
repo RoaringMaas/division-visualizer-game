@@ -1,73 +1,55 @@
 /**
  * Leaderboard Component
- * Displays student rankings by accuracy
+ * Displays student rankings by accuracy from backend database
  */
 
 import { Button } from "@/components/ui/button";
+import { trpc } from "@/lib/trpc";
 import { motion } from "framer-motion";
-import { Medal, Trash2 } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export interface LeaderboardEntry {
-  id: string;
+  id: number;
   name: string;
   score: number;
   totalQuestions: number;
-  accuracy: number;
-  timestamp: number;
+  accuracy?: number;
+  createdAt: Date;
 }
 
 interface LeaderboardProps {
   onClose?: () => void;
 }
 
-const STORAGE_KEY = "division_leaderboard";
 const QUIZ_LENGTH = 10;
 
 export default function Leaderboard({ onClose }: LeaderboardProps) {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load leaderboard from localStorage
+  // Fetch leaderboard from backend
+  const { data: leaderboardData } = trpc.leaderboard.getAll.useQuery();
+
+  // Update entries when data changes
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        // Sort by accuracy (descending), then by timestamp (newest first)
-        const sorted = parsed.sort((a: LeaderboardEntry, b: LeaderboardEntry) => {
-          if (b.accuracy !== a.accuracy) {
-            return b.accuracy - a.accuracy;
+    if (leaderboardData) {
+      const sortedEntries = leaderboardData
+        .map((entry) => ({
+          ...entry,
+          accuracy: Math.round((entry.score / entry.totalQuestions) * 100)
+        }))
+        .sort((a, b) => {
+          // Sort by accuracy descending, then by date descending
+          if ((b.accuracy || 0) !== (a.accuracy || 0)) {
+            return (b.accuracy || 0) - (a.accuracy || 0);
           }
-          return b.timestamp - a.timestamp;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         });
-        setEntries(sorted);
-      } catch (error) {
-        console.error("Error loading leaderboard:", error);
-      }
+      setEntries(sortedEntries);
+      setIsLoading(false);
     }
-  }, []);
-
-  const handleAddEntry = (name: string, score: number) => {
-    const newEntry: LeaderboardEntry = {
-      id: Date.now().toString(),
-      name,
-      score,
-      totalQuestions: QUIZ_LENGTH,
-      accuracy: Math.round((score / QUIZ_LENGTH) * 100),
-      timestamp: Date.now()
-    };
-
-    const updated = [newEntry, ...entries];
-    setEntries(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-  };
-
-  const handleClearLeaderboard = () => {
-    if (confirm("Are you sure you want to clear the entire leaderboard? This cannot be undone.")) {
-      setEntries([]);
-      localStorage.removeItem(STORAGE_KEY);
-    }
-  };
+  }, [leaderboardData]);
 
   const getMedalIcon = (rank: number) => {
     switch (rank) {
@@ -101,122 +83,123 @@ export default function Leaderboard({ onClose }: LeaderboardProps) {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <div className="text-2xl font-bold text-foreground mb-2">Loading leaderboard...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+        className="flex items-center gap-3 mb-6"
       >
-        <div className="flex items-center gap-3">
-          <Medal size={32} className="text-[#f97316]" />
-          <h2 className="text-3xl font-bold text-foreground" style={{ fontFamily: "Fredoka" }}>
-            Leaderboard
-          </h2>
-        </div>
-        {entries.length > 0 && (
-          <Button
-            onClick={handleClearLeaderboard}
-            variant="outline"
-            size="sm"
-            className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-          >
-            <Trash2 size={16} />
-            Clear
-          </Button>
-        )}
+        <Trophy size={32} className="text-[#d4af37]" />
+        <h2 className="text-3xl font-bold text-foreground" style={{ fontFamily: "Fredoka" }}>
+          Leaderboard
+        </h2>
       </motion.div>
 
-      {/* Leaderboard Table */}
+      {/* Empty State */}
       {entries.length === 0 ? (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-12 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="p-12 text-center bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200"
         >
-          <div className="text-4xl mb-2">📊</div>
+          <div className="text-5xl mb-4">📊</div>
           <p className="text-lg text-muted-foreground">
             No scores yet. Complete a quiz to appear on the leaderboard!
           </p>
         </motion.div>
       ) : (
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="space-y-3"
-        >
-          {entries.map((entry, index) => (
+        <>
+          {/* Leaderboard Entries */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-3"
+          >
+            {entries.map((entry, index) => (
+              <motion.div
+                key={entry.id}
+                variants={itemVariants}
+                className={`p-4 rounded-lg border-2 flex items-center justify-between ${
+                  index < 3
+                    ? "bg-gradient-to-r from-[#f97316]/5 to-[#a855f7]/5 border-[#f97316]/30"
+                    : "bg-slate-50 border-slate-200"
+                }`}
+              >
+                <div className="flex items-center gap-4 flex-1">
+                  {/* Rank */}
+                  <div className="w-12 text-center">
+                    {getMedalIcon(index) ? (
+                      <span className="text-2xl">{getMedalIcon(index)}</span>
+                    ) : (
+                      <span className="text-xl font-bold text-muted-foreground">#{index + 1}</span>
+                    )}
+                  </div>
+
+                  {/* Name */}
+                  <div className="flex-1">
+                    <p className="font-bold text-foreground text-lg">{entry.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(entry.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Score and Accuracy */}
+                <div className="text-right">
+                  <div className="text-2xl font-bold quotient-color">
+                    {entry.accuracy}%
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {entry.score}/{entry.totalQuestions}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Stats Summary */}
+          {entries.length > 0 && (
             <motion.div
-              key={entry.id}
-              variants={itemVariants}
-              className={`p-4 rounded-lg border-2 flex items-center justify-between ${
-                index < 3
-                  ? "bg-gradient-to-r from-[#f97316]/5 to-[#a855f7]/5 border-[#f97316]/30"
-                  : "bg-slate-50 border-slate-200"
-              }`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="grid grid-cols-3 gap-4 p-6 bg-gradient-to-br from-[#0891b2]/10 to-[#a855f7]/10 rounded-lg border border-slate-200"
             >
-              <div className="flex items-center gap-4 flex-1">
-                {/* Rank */}
-                <div className="w-12 text-center">
-                  {getMedalIcon(index) ? (
-                    <span className="text-2xl">{getMedalIcon(index)}</span>
-                  ) : (
-                    <span className="text-xl font-bold text-muted-foreground">#{index + 1}</span>
-                  )}
-                </div>
-
-                {/* Name */}
-                <div className="flex-1">
-                  <p className="font-bold text-foreground text-lg">{entry.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(entry.timestamp).toLocaleDateString()}
-                  </p>
-                </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-foreground">{entries.length}</div>
+                <div className="text-sm text-muted-foreground">Total Scores</div>
               </div>
-
-              {/* Score and Accuracy */}
-              <div className="text-right">
+              <div className="text-center">
                 <div className="text-2xl font-bold quotient-color">
-                  {entry.accuracy}%
+                  {Math.round(
+                    entries.reduce((sum, e) => sum + (e.accuracy || 0), 0) / entries.length
+                  )}
+                  %
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  {entry.score}/{entry.totalQuestions}
+                <div className="text-sm text-muted-foreground">Avg Accuracy</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">
+                  {Math.max(...entries.map((e) => e.accuracy || 0))}%
                 </div>
+                <div className="text-sm text-muted-foreground">Best Score</div>
               </div>
             </motion.div>
-          ))}
-        </motion.div>
-      )}
-
-      {/* Stats Summary */}
-      {entries.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="grid grid-cols-3 gap-4 p-6 bg-gradient-to-br from-[#0891b2]/10 to-[#a855f7]/10 rounded-lg border border-slate-200"
-        >
-          <div className="text-center">
-            <div className="text-2xl font-bold dividend-color">{entries.length}</div>
-            <div className="text-xs text-muted-foreground">Total Attempts</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold quotient-color">
-              {Math.round(
-                entries.reduce((sum, e) => sum + e.accuracy, 0) / entries.length
-              )}%
-            </div>
-            <div className="text-xs text-muted-foreground">Average Accuracy</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold divisor-color">
-              {Math.max(...entries.map((e) => e.accuracy))}%
-            </div>
-            <div className="text-xs text-muted-foreground">Best Score</div>
-          </div>
-        </motion.div>
+          )}
+        </>
       )}
 
       {/* Close Button */}
@@ -233,25 +216,14 @@ export default function Leaderboard({ onClose }: LeaderboardProps) {
 }
 
 /**
- * Hook to add entry to leaderboard
+ * Hook to add entry to leaderboard (kept for backward compatibility)
+ * Now uses backend tRPC mutation instead of localStorage
  */
 export function useLeaderboard() {
+  const addScoreMutation = trpc.leaderboard.addScore.useMutation();
+
   const addEntry = (name: string, score: number) => {
-    const newEntry: LeaderboardEntry = {
-      id: Date.now().toString(),
-      name,
-      score,
-      totalQuestions: QUIZ_LENGTH,
-      accuracy: Math.round((score / QUIZ_LENGTH) * 100),
-      timestamp: Date.now()
-    };
-
-    const stored = localStorage.getItem(STORAGE_KEY);
-    const entries = stored ? JSON.parse(stored) : [];
-    const updated = [newEntry, ...entries];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-
-    return newEntry;
+    addScoreMutation.mutate({ name, score, totalQuestions: QUIZ_LENGTH });
   };
 
   return { addEntry };
