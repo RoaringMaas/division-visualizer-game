@@ -36,3 +36,4 @@
 
 ## Phase 6: Quiz Mode Improvements
 - [x] Make quiz mode answers irreversible - disable input fields after submission
+- [x] Prevent navigation back to previous questions in quiz mode

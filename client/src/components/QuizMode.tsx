@@ -339,6 +339,7 @@ export default function QuizMode({ onComplete, onExit, difficulty: initialDiffic
               <motion.button
                 key={i}
                 onClick={() => setCurrentQuestion(i)}
+                disabled={i < currentQuestion}
                 className={`w-10 h-10 rounded-lg font-bold transition-all ${
                   i === currentQuestion
                     ? "bg-gradient-to-r from-[#0891b2] to-[#06b6d4] text-white scale-110"
@@ -347,9 +348,9 @@ export default function QuizMode({ onComplete, onExit, difficulty: initialDiffic
                     : answers[i] === false
                     ? "bg-red-500 text-white"
                     : "bg-slate-200 text-slate-600 hover:bg-slate-300"
-                }`}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
+                } ${i < currentQuestion ? "opacity-50 cursor-not-allowed" : ""}`}
+                whileHover={i < currentQuestion ? {} : { scale: 1.1 }}
+                whileTap={i < currentQuestion ? {} : { scale: 0.95 }}
               >
                 {i + 1}
               </motion.button>
