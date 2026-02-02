@@ -42,3 +42,9 @@
 ## Phase 7: Home Page Restructuring
 - [x] Create landing page with three main entry point buttons (Practice, Quiz, Leaderboard)
 - [x] Update App.tsx routing to handle mode navigation from home page
+
+## Phase 8: Review Wrong Questions Feature
+- [x] Add review mode to revisit and redo incorrect quiz questions
+- [x] Allow clicking wrong question numbers in results summary
+- [x] Track corrected questions and update results page
+- [x] Return to results page after answering correctly

@@ -5,6 +5,7 @@
 
 import AnswerInput from "@/components/AnswerInput";
 import QuizResultsSummary from "@/components/QuizResultsSummary";
+import QuizReviewMode from "@/components/QuizReviewMode";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DivisionProblem, generateDivisionProblem, Difficulty } from "@/lib/divisionUtils";
@@ -27,6 +28,7 @@ export default function QuizMode({ onComplete, onExit, difficulty: initialDiffic
   const [answers, setAnswers] = useState<boolean[]>([]);
   const [quizComplete, setQuizComplete] = useState(false);
   const [showResultsSummary, setShowResultsSummary] = useState(false);
+  const [reviewingQuestion, setReviewingQuestion] = useState<number | null>(null);
   const [studentName, setStudentName] = useState("");
   const [nameSubmitted, setNameSubmitted] = useState(false);
 
@@ -70,6 +72,18 @@ export default function QuizMode({ onComplete, onExit, difficulty: initialDiffic
 
   const handleViewResults = () => {
     setShowResultsSummary(true);
+  };
+
+  const handleReviewQuestion = (questionIndex: number) => {
+    setReviewingQuestion(questionIndex);
+  };
+
+  const handleQuestionCorrected = () => {
+    // Mark the question as correct
+    const newAnswers = [...answers];
+    newAnswers[reviewingQuestion!] = true;
+    setAnswers(newAnswers);
+    setReviewingQuestion(null);
   };
 
   const handleSubmitQuiz = () => {
@@ -173,6 +187,18 @@ export default function QuizMode({ onComplete, onExit, difficulty: initialDiffic
     );
   }
 
+  // Review Mode - Reviewing a specific wrong question
+  if (reviewingQuestion !== null) {
+    return (
+      <QuizReviewMode
+        problems={problems}
+        questionIndex={reviewingQuestion}
+        onAnswerCorrect={handleQuestionCorrected}
+        onExit={() => setReviewingQuestion(null)}
+      />
+    );
+  }
+
   // Results Summary Screen
   if (quizComplete && showResultsSummary && !nameSubmitted) {
     return (
@@ -180,8 +206,10 @@ export default function QuizMode({ onComplete, onExit, difficulty: initialDiffic
         score={score}
         totalQuestions={QUIZ_LENGTH}
         answers={answers}
+        problems={problems}
         onViewLeaderboard={() => setShowResultsSummary(false)}
         onExit={onExit || (() => {})}
+        onReviewQuestion={handleReviewQuestion}
       />
     );
   }
