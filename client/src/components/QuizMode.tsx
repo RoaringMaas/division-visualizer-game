@@ -4,6 +4,7 @@
  */
 
 import AnswerInput from "@/components/AnswerInput";
+import QuizResultsSummary from "@/components/QuizResultsSummary";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DivisionProblem, generateDivisionProblem, Difficulty } from "@/lib/divisionUtils";
@@ -25,6 +26,7 @@ export default function QuizMode({ onComplete, onExit, difficulty: initialDiffic
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<boolean[]>([]);
   const [quizComplete, setQuizComplete] = useState(false);
+  const [showResultsSummary, setShowResultsSummary] = useState(false);
   const [studentName, setStudentName] = useState("");
   const [nameSubmitted, setNameSubmitted] = useState(false);
 
@@ -64,6 +66,10 @@ export default function QuizMode({ onComplete, onExit, difficulty: initialDiffic
     if (currentQuestion > 0) {
       setCurrentQuestion(currentQuestion - 1);
     }
+  };
+
+  const handleViewResults = () => {
+    setShowResultsSummary(true);
   };
 
   const handleSubmitQuiz = () => {
@@ -167,8 +173,21 @@ export default function QuizMode({ onComplete, onExit, difficulty: initialDiffic
     );
   }
 
-  // Quiz completion screen
-  if (quizComplete && !nameSubmitted) {
+  // Results Summary Screen
+  if (quizComplete && showResultsSummary && !nameSubmitted) {
+    return (
+      <QuizResultsSummary
+        score={score}
+        totalQuestions={QUIZ_LENGTH}
+        answers={answers}
+        onViewLeaderboard={() => setShowResultsSummary(false)}
+        onExit={onExit || (() => {})}
+      />
+    );
+  }
+
+  // Quiz completion screen (name input before leaderboard)
+  if (quizComplete && !showResultsSummary && !nameSubmitted) {
     return (
       <motion.div
         initial={{ opacity: 0 }}
@@ -194,20 +213,13 @@ export default function QuizMode({ onComplete, onExit, difficulty: initialDiffic
             transition={{ delay: 0.3 }}
             className="space-y-6"
           >
-            {/* Score Display */}
-            <div className="text-center p-6 bg-gradient-to-br from-[#a855f7]/10 to-[#ec4899]/10 rounded-lg border border-[#a855f7]/20">
-              <div className="text-5xl font-bold quotient-color mb-2">{score}/{QUIZ_LENGTH}</div>
-              <div className="text-2xl font-bold text-foreground mb-1">
-                {accuracy}% Accuracy
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {accuracy >= 80
-                  ? "Excellent work! 🌟"
-                  : accuracy >= 60
-                  ? "Good effort! Keep practicing! 💪"
-                  : "Keep trying! You'll improve! 📚"}
-              </div>
-            </div>
+            {/* View Results Button */}
+            <Button
+              onClick={handleViewResults}
+              className="w-full h-12 font-bold rounded-lg bg-gradient-to-r from-[#0891b2] to-[#06b6d4] hover:from-[#0284c7] hover:to-[#0891b2] text-white"
+            >
+              View Results Summary
+            </Button>
 
             {/* Student Name Input */}
             <div className="space-y-2">
