@@ -38,3 +38,7 @@
 - [x] Make quiz mode answers irreversible - disable input fields after submission
 - [x] Prevent navigation back to previous questions in quiz mode
 - [x] Add quiz results summary screen with score, accuracy, and breakdown
+
+## Phase 7: Home Page Restructuring
+- [x] Create landing page with three main entry point buttons (Practice, Quiz, Leaderboard)
+- [x] Update App.tsx routing to handle mode navigation from home page

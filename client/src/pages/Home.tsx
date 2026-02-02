@@ -1,12 +1,13 @@
 /**
  * Division Visualizer Game - Home Page
- * Design: Playful Educational with asymmetric layout
- * Features: Practice mode, Quiz mode, and Leaderboard (shared backend)
+ * Design: Playful Educational with three main entry points
+ * Features: Practice mode, Quiz mode, and Leaderboard navigation
  */
 
 import AnswerInput from "@/components/AnswerInput";
 import DivisionVisualizer from "@/components/DivisionVisualizer";
 import QuizMode from "@/components/QuizMode";
+import Leaderboard, { useLeaderboard } from "@/components/Leaderboard";
 import { Button } from "@/components/ui/button";
 import {
   DivisionProblem,
@@ -14,17 +15,18 @@ import {
   Difficulty
 } from "@/lib/divisionUtils";
 import { motion, AnimatePresence } from "framer-motion";
-import { RefreshCw, BookOpen, Trophy } from "lucide-react";
+import { RefreshCw, BookOpen, Trophy, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 
-type PageMode = "practice" | "quiz" | "leaderboard";
+type PageMode = "landing" | "practice" | "quiz" | "leaderboard";
 
 export default function Home() {
   const [problem, setProblem] = useState<DivisionProblem | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [pageMode, setPageMode] = useState<PageMode>("practice");
+  const [pageMode, setPageMode] = useState<PageMode>("landing");
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
+  const { addEntry } = useLeaderboard();
 
   // Fetch leaderboard from backend
   const { data: leaderboardData, refetch: refetchLeaderboard } = trpc.leaderboard.getAll.useQuery();
@@ -52,20 +54,134 @@ export default function Home() {
     addScoreMutation.mutate({ name: studentName, score, totalQuestions: 10 });
   };
 
-  if (!problem && pageMode === "practice") {
+  const handleBackToHome = () => {
+    setPageMode("landing");
+  };
+
+  // Landing Page - Three Main Entry Points
+  if (pageMode === "landing") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="text-4xl font-bold mb-4 text-foreground">Loading...</div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="min-h-screen bg-gradient-to-br from-[#fef9f3] via-[#fef3c7]/30 to-[#fef9f3] flex flex-col items-center justify-center p-4"
+      >
+        <div className="max-w-4xl w-full">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h1 className="text-6xl md:text-7xl font-bold mb-4 text-foreground" style={{ fontFamily: "Fredoka" }}>
+              Division Visualizer
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Learn how division works with real-life scenarios. Watch as numbers are grouped and distributed!
+            </p>
+          </motion.div>
+
+          {/* Three Main Buttons */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {/* Practice Mode Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <button
+                onClick={() => setPageMode("practice")}
+                className="w-full h-full p-8 rounded-2xl bg-gradient-to-br from-[#0891b2] to-[#06b6d4] hover:from-[#0284c7] hover:to-[#0891b2] text-white shadow-xl transition-all border-2 border-transparent hover:border-white"
+              >
+                <div className="flex flex-col items-center gap-4">
+                  <BookOpen size={48} />
+                  <div className="text-center">
+                    <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: "Fredoka" }}>
+                      Practice Mode
+                    </h2>
+                    <p className="text-sm opacity-90">
+                      Learn with visual blocks and instant feedback
+                    </p>
+                  </div>
+                </div>
+              </button>
+            </motion.div>
+
+            {/* Quiz Mode Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <button
+                onClick={() => setPageMode("quiz")}
+                className="w-full h-full p-8 rounded-2xl bg-gradient-to-br from-[#f97316] to-[#ea580c] hover:from-[#ea580c] hover:to-[#d97706] text-white shadow-xl transition-all border-2 border-transparent hover:border-white"
+              >
+                <div className="flex flex-col items-center gap-4">
+                  <Zap size={48} />
+                  <div className="text-center">
+                    <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: "Fredoka" }}>
+                      Quiz Mode
+                    </h2>
+                    <p className="text-sm opacity-90">
+                      Test your skills with 10 questions
+                    </p>
+                  </div>
+                </div>
+              </button>
+            </motion.div>
+
+            {/* Leaderboard Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <button
+                onClick={() => setPageMode("leaderboard")}
+                className="w-full h-full p-8 rounded-2xl bg-gradient-to-br from-[#d4af37] to-[#aa8c2c] hover:from-[#aa8c2c] hover:to-[#8b6f1f] text-white shadow-xl transition-all border-2 border-transparent hover:border-white"
+              >
+                <div className="flex flex-col items-center gap-4">
+                  <Trophy size={48} />
+                  <div className="text-center">
+                    <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: "Fredoka" }}>
+                      Leaderboard
+                    </h2>
+                    <p className="text-sm opacity-90">
+                      See top scores and rankings
+                    </p>
+                  </div>
+                </div>
+              </button>
+            </motion.div>
+          </div>
+
+          {/* Decorative text */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="text-center text-sm text-muted-foreground"
+          >
+            <p>Choose a mode to get started!</p>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-[#fef9f3] via-[#fef3c7]/30 to-[#fef9f3]">
-      <AnimatePresence mode="wait">
-        {pageMode === "practice" && problem && (
+  // Practice Mode
+  if (pageMode === "practice" && problem) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#fef9f3] via-[#fef3c7]/30 to-[#fef9f3]">
+        <AnimatePresence mode="wait">
           <motion.div
             key="practice"
             initial={{ opacity: 0 }}
@@ -80,285 +196,159 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <h1 className="text-5xl md:text-6xl font-bold mb-3 text-foreground" style={{ fontFamily: "Fredoka" }}>
-                Division Visualizer
-              </h1>
+              <div className="flex items-center justify-between mb-6">
+                <h1 className="text-5xl md:text-6xl font-bold text-foreground flex-1" style={{ fontFamily: "Fredoka" }}>
+                  Practice Mode
+                </h1>
+                <Button
+                  onClick={handleBackToHome}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  Back to Home
+                </Button>
+              </div>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
                 Learn how division works with real-life scenarios. Watch as numbers are grouped and distributed!
               </p>
 
-              {/* Mode Buttons */}
+              {/* Difficulty Selection */}
               <div className="flex gap-3 justify-center flex-wrap mb-6">
                 <Button
-                  onClick={() => setPageMode("practice")}
-                  className="gap-2 bg-gradient-to-r from-[#0891b2] to-[#06b6d4] hover:from-[#0284c7] hover:to-[#0891b2] text-white font-bold"
+                  onClick={() => setDifficulty("easy")}
+                  className={`gap-2 font-bold ${
+                    difficulty === "easy"
+                      ? "bg-green-500 hover:bg-green-600 text-white"
+                      : "bg-slate-200 hover:bg-slate-300 text-slate-700"
+                  }`}
                 >
-                  <BookOpen size={18} />
-                  Practice Mode
+                  Easy (2-digit by 1-digit)
                 </Button>
                 <Button
-                  onClick={() => setPageMode("quiz")}
-                  className="gap-2 bg-gradient-to-r from-[#f97316] to-[#ea580c] hover:from-[#ea580c] hover:to-[#d97706] text-white font-bold"
+                  onClick={() => setDifficulty("medium")}
+                  className={`gap-2 font-bold ${
+                    difficulty === "medium"
+                      ? "bg-blue-500 hover:bg-blue-600 text-white"
+                      : "bg-slate-200 hover:bg-slate-300 text-slate-700"
+                  }`}
                 >
-                  <Trophy size={18} />
-                  Quiz Mode
+                  Medium (3-digit by 1-digit)
                 </Button>
                 <Button
-                  onClick={() => setPageMode("leaderboard")}
-                  variant="outline"
-                  className="gap-2 font-bold border-2 border-[#f97316] text-[#f97316] hover:bg-[#f97316]/10"
+                  onClick={() => setDifficulty("hard")}
+                  className={`gap-2 font-bold ${
+                    difficulty === "hard"
+                      ? "bg-red-500 hover:bg-red-600 text-white"
+                      : "bg-slate-200 hover:bg-slate-300 text-slate-700"
+                  }`}
                 >
-                  <Trophy size={18} />
-                  Leaderboard
+                  Hard (2-digit & 3-digit by 2-digit)
                 </Button>
               </div>
-
-              {/* Difficulty Selector */}
-              {pageMode === "practice" && (
-                <div className="flex gap-2 justify-center flex-wrap">
-                  <button
-                    onClick={() => setDifficulty("easy")}
-                    className={`px-4 py-2 rounded-lg font-bold transition-all ${
-                      difficulty === "easy"
-                        ? "bg-green-500 text-white shadow-lg"
-                        : "bg-white text-green-600 border-2 border-green-500 hover:bg-green-50"
-                    }`}
-                  >
-                    Easy (2-digit by 1-digit)
-                  </button>
-                  <button
-                    onClick={() => setDifficulty("medium")}
-                    className={`px-4 py-2 rounded-lg font-bold transition-all ${
-                      difficulty === "medium"
-                        ? "bg-blue-500 text-white shadow-lg"
-                        : "bg-white text-blue-600 border-2 border-blue-500 hover:bg-blue-50"
-                    }`}
-                  >
-                    Medium (3-digit by 1-digit)
-                  </button>
-                  <button
-                    onClick={() => setDifficulty("hard")}
-                    className={`px-4 py-2 rounded-lg font-bold transition-all ${
-                      difficulty === "hard"
-                        ? "bg-red-500 text-white shadow-lg"
-                        : "bg-white text-red-600 border-2 border-red-500 hover:bg-red-50"
-                    }`}
-                  >
-                    Hard (2-digit & 3-digit by 2-digit)
-                  </button>
-                </div>
-              )}
             </motion.div>
 
-            {/* Main Content - Asymmetric Layout */}
+            {/* Main Content */}
             <div className="max-w-7xl mx-auto">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                {/* Left: Visualization (60%) */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Left Column - Visualizer */}
                 <motion.div
-                  className="lg:col-span-2 bg-white rounded-2xl shadow-xl p-8 border border-slate-100"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                  key={`problem-${problem.dividend}-${problem.divisor}`}
+                  className="lg:col-span-2"
                 >
-                  <DivisionVisualizer
-                    problem={problem}
-                    showResult={false}
-                  />
+                  <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-100">
+                    <DivisionVisualizer problem={problem} />
+                  </div>
                 </motion.div>
 
-                {/* Right: Answer Input (40%) */}
+                {/* Right Column - Scenario & Input */}
                 <motion.div
-                  className="lg:col-span-1 space-y-6"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
+                  className="space-y-4"
                 >
                   {/* Scenario Card */}
-                  <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-slate-100 hover:shadow-xl transition-shadow">
-                    <div className="text-5xl mb-4 text-center">{problem.scenario.emoji}</div>
-                    <h2 className="text-2xl font-bold text-foreground mb-2" style={{ fontFamily: "Fredoka" }}>
-                      {problem.scenario.title}
-                    </h2>
-                    <p className="text-muted-foreground mb-4">
-                      {problem.dividend} {problem.scenario.description} by {problem.divisor}
-                    </p>
-                    <div className="bg-gradient-to-br from-[#a855f7]/10 to-[#ec4899]/10 rounded-lg p-4 border border-[#a855f7]/20">
-                      <p className="text-sm font-medium text-foreground">
-                        {problem.scenario.context} <span className="font-bold quotient-color">?</span> each
-                        {problem.remainder > 0 && (
-                          <span>, with <span className="font-bold text-orange-500">?</span> left over</span>
-                        )}
-                      </p>
-                    </div>
+                  <div className="bg-white rounded-2xl shadow-xl p-6 border border-slate-100">
+                    <h3 className="text-lg font-bold text-foreground mb-3">Real-Life Scenario</h3>
+                    <div className="text-4xl mb-3">{problem.scenario.emoji}</div>
+                    <p className="text-foreground font-semibold mb-2">{problem.scenario.title}</p>
+                    <p className="text-sm text-muted-foreground">{problem.scenario.description}</p>
                   </div>
 
-                  {/* Answer Input Card */}
-                  <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-slate-100">
-                    <h3 className="text-lg font-bold text-foreground mb-4" style={{ fontFamily: "Fredoka" }}>
-                      Your Answer
-                    </h3>
-                  <AnswerInput
-                    problem={problem}
-                    showFeedback={true}
-                    mode="practice"
-                    onNewProblem={handleRefresh}
-                  />
+                  {/* Answer Input */}
+                  <div className="bg-white rounded-2xl shadow-xl p-6 border border-slate-100">
+                    <h3 className="text-lg font-bold text-foreground mb-4">Your Answer</h3>
+                    <AnswerInput
+                      problem={problem}
+                      showFeedback={true}
+                      mode="practice"
+                      onNewProblem={handleRefresh}
+                    />
                   </div>
 
                   {/* Refresh Button */}
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleRefresh}
+                    disabled={isRefreshing}
+                    className="w-full p-3 rounded-lg bg-gradient-to-r from-slate-400 to-slate-500 hover:from-slate-500 hover:to-slate-600 text-white font-bold disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                   >
-                    <Button
-                      onClick={handleRefresh}
-                      disabled={isRefreshing}
-                      className="w-full h-12 text-base font-bold rounded-xl bg-gradient-to-r from-[#0891b2] to-[#06b6d4] hover:from-[#0284c7] hover:to-[#0891b2] text-white shadow-lg"
-                    >
-                      <motion.div
-                        animate={isRefreshing ? { rotate: 360 } : { rotate: 0 }}
-                        transition={{ duration: 0.6, repeat: isRefreshing ? Infinity : 0 }}
-                        className="mr-2"
-                      >
-                        <RefreshCw size={20} />
-                      </motion.div>
-                      {isRefreshing ? "Generating..." : "New Problem"}
-                    </Button>
-                  </motion.div>
+                    <RefreshCw size={18} className={isRefreshing ? "animate-spin" : ""} />
+                    New Problem
+                  </motion.button>
                 </motion.div>
               </div>
             </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    );
+  }
 
-            {/* Footer Info */}
-            <motion.div
-              className="max-w-7xl mx-auto mt-16 text-center text-sm text-muted-foreground"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
+  // Quiz Mode
+  if (pageMode === "quiz") {
+    return (
+      <QuizMode
+        onComplete={handleQuizComplete}
+        onExit={handleBackToHome}
+      />
+    );
+  }
+
+  // Leaderboard Mode
+  if (pageMode === "leaderboard") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#fef9f3] via-[#fef3c7]/30 to-[#fef9f3] py-8 px-4">
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 flex items-center justify-between"
+          >
+            <h1 className="text-5xl md:text-6xl font-bold text-foreground" style={{ fontFamily: "Fredoka" }}>
+              Leaderboard
+            </h1>
+            <Button
+              onClick={handleBackToHome}
+              variant="outline"
+              className="gap-2"
             >
-              <p>
-                Practice mode: Input your answers and get instant feedback. Ready to test your skills? Try <span className="font-semibold">Quiz Mode</span>!
-              </p>
-            </motion.div>
-          </motion.div>
-        )}
-
-        {pageMode === "quiz" && (
-          <motion.div
-            key="quiz"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <QuizMode
-              onComplete={handleQuizComplete}
-              onExit={() => setPageMode("practice")}
-              difficulty={difficulty}
-            />
-          </motion.div>
-        )}
-
-        {pageMode === "leaderboard" && (
-          <motion.div
-            key="leaderboard"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="py-12 px-4"
-          >
-            <div className="max-w-2xl mx-auto">
-              <SharedLeaderboard
-                entries={leaderboardData || []}
-                onClose={() => setPageMode("practice")}
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-/**
- * Shared Leaderboard Component
- * Displays scores from all students in the backend database
- */
-function SharedLeaderboard({ entries, onClose }: { entries: any[]; onClose: () => void }) {
-  const getMedalIcon = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return "🥇";
-      case 2:
-        return "🥈";
-      case 3:
-        return "🥉";
-      default:
-        return "📊";
-    }
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="py-12 px-4"
-    >
-      <div className="bg-white rounded-2xl shadow-2xl p-8 border border-slate-100">
-        <div className="text-center mb-8">
-          <h2 className="text-4xl font-bold text-foreground mb-2" style={{ fontFamily: "Fredoka" }}>
-            🏆 Leaderboard
-          </h2>
-          <p className="text-muted-foreground">Top performers in Division Visualizer</p>
-        </div>
-
-        {entries.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground mb-4">No scores yet. Be the first to take the quiz!</p>
-            <Button onClick={onClose} className="bg-gradient-to-r from-[#0891b2] to-[#06b6d4] text-white">
-              Back to Practice
+              Back to Home
             </Button>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {entries.map((entry, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-50 to-slate-100 rounded-lg border border-slate-200 hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-center gap-4">
-                  <span className="text-2xl">{getMedalIcon(index + 1)}</span>
-                  <div>
-                    <p className="font-bold text-foreground">{entry.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {entry.score}/{entry.totalQuestions} correct
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-[#0891b2]">
-                    {Math.round((entry.score / entry.totalQuestions) * 100)}%
-                  </p>
-                  <p className="text-xs text-muted-foreground">accuracy</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
-
-        <div className="mt-8 text-center">
-          <Button
-            onClick={onClose}
-            className="bg-gradient-to-r from-[#0891b2] to-[#06b6d4] text-white hover:from-[#0284c7] hover:to-[#0891b2]"
-          >
-            Back to Practice
-          </Button>
+          </motion.div>
+          <Leaderboard onClose={handleBackToHome} />
         </div>
       </div>
-    </motion.div>
+    );
+  }
+
+  // Fallback loading state
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="text-center">
+        <div className="text-4xl font-bold mb-4 text-foreground">Loading...</div>
+      </div>
+    </div>
   );
 }
