@@ -93,7 +93,7 @@ export default function AnswerInput({
             value={quotient}
             onChange={(e) => setQuotient(e.target.value)}
             placeholder="Enter quotient"
-            disabled={submitted && mode === "practice"}
+            disabled={submitted}
             className="text-lg font-bold quotient-color border-2 border-[#a855f7]/30 focus:border-[#a855f7]"
           />
         </div>
@@ -108,7 +108,7 @@ export default function AnswerInput({
             value={remainder}
             onChange={(e) => setRemainder(e.target.value)}
             placeholder="Enter remainder"
-            disabled={submitted && mode === "practice"}
+            disabled={submitted}
             className="text-lg font-bold text-orange-500 border-2 border-orange-200 focus:border-orange-500"
           />
         </div>

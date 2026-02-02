@@ -29,7 +29,10 @@
 - [ ] Test animations and transitions
 
 ## Phase 5: Difficulty Levels
-- [ ] Update divisionUtils to generate problems by difficulty
-- [ ] Add difficulty selector UI to Home page
-- [ ] Update quiz mode to use selected difficulty
-- [ ] Test Easy (2-digit ÷ 1-digit), Medium (3-digit ÷ 1-digit), Hard (2-3 digit ÷ 2-digit)
+- [x] Update divisionUtils to generate problems by difficulty
+- [x] Add difficulty selector UI to Home page
+- [x] Update quiz mode to use selected difficulty
+- [x] Test Easy (2-digit ÷ 1-digit), Medium (3-digit ÷ 1-digit), Hard (2-3 digit ÷ 2-digit)
+
+## Phase 6: Quiz Mode Improvements
+- [x] Make quiz mode answers irreversible - disable input fields after submission
