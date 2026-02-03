@@ -364,11 +364,13 @@ export default function QuizMode({ onComplete, onExit, difficulty: initialDiffic
           animate={{ opacity: 1, y: 0 }}
           className="flex gap-4 justify-between"
         >
+          {/* Previous button disabled in quiz mode - students cannot go back */}
           <Button
             onClick={handlePrevious}
-            disabled={currentQuestion === 0}
+            disabled={true}
             variant="outline"
             className="gap-2"
+            title="You cannot go back in quiz mode"
           >
             <ArrowLeft size={16} />
             Previous
