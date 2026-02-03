@@ -214,3 +214,67 @@ export async function updateStudentStatistics(
     throw error;
   }
 }
+
+/**
+ * Get student achievements by name
+ */
+export async function getStudentAchievements(name: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get achievements: database not available");
+    return [];
+  }
+
+  try {
+    const { studentAchievements: achievements } = await import("../drizzle/schema");
+    const result = await db.select().from(achievements).where(eq(achievements.name, name));
+    return result;
+  } catch (error) {
+    console.error("[Database] Failed to get student achievements:", error);
+    return [];
+  }
+}
+
+/**
+ * Award a badge to a student (if not already awarded)
+ */
+export async function awardBadge(
+  name: string,
+  badgeId: string,
+  badgeTitle: string,
+  badgeDescription: string
+) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot award badge: database not available");
+    return null;
+  }
+
+  try {
+    const { studentAchievements: achievements } = await import("../drizzle/schema");
+    
+    // Check if badge already exists
+    const existing = await db
+      .select()
+      .from(achievements)
+      .where(eq(achievements.name, name))
+      .limit(1);
+
+    const alreadyHasBadge = existing.some((a) => a.badgeId === badgeId);
+    
+    if (!alreadyHasBadge) {
+      await db.insert(achievements).values({
+        name,
+        badgeId,
+        badgeTitle,
+        badgeDescription,
+      });
+      return { success: true, newBadge: true };
+    }
+    
+    return { success: true, newBadge: false };
+  } catch (error) {
+    console.error("[Database] Failed to award badge:", error);
+    throw error;
+  }
+}

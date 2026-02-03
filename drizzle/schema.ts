@@ -57,3 +57,18 @@ export const studentStatistics = mysqlTable("studentStatistics", {
 
 export type StudentStatistic = typeof studentStatistics.$inferSelect;
 export type InsertStudentistic = typeof studentStatistics.$inferInsert;
+/**
+ * Student Achievements table for tracking badges
+ * Stores unlocked achievements/badges for each student
+ */
+export const studentAchievements = mysqlTable("studentAchievements", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  badgeId: varchar("badgeId", { length: 50 }).notNull(),
+  badgeTitle: varchar("badgeTitle", { length: 100 }).notNull(),
+  badgeDescription: text("badgeDescription").notNull(),
+  unlockedAt: timestamp("unlockedAt").defaultNow().notNull(),
+});
+
+export type StudentAchievement = typeof studentAchievements.$inferSelect;
+export type InsertStudentAchievement = typeof studentAchievements.$inferInsert;
